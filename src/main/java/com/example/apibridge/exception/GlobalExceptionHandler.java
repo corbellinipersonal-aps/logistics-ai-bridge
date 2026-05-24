@@ -48,6 +48,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(400).body(error);
     }
 
+    @ExceptionHandler(AIExtractionException.class)
+    public ResponseEntity<Map<String, String>> handleAIExtractionException(AIExtractionException e) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", "AI Extraction Failed");
+        error.put("message", e.getMessage());
+        return ResponseEntity.status(502).body(error);
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, String>> handleRuntimeException(RuntimeException e) {
         Map<String, String> error = new HashMap<>();
@@ -60,7 +68,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleGenericException(Exception e) {
         Map<String, String> error = new HashMap<>();
         error.put("error", "Internal Server Error");
-        error.put("message", "An unexpected error occurred: " + e.getMessage());
+        error.put("message", "An unexpected error occurred. Please contact support.");
         return ResponseEntity.status(500).body(error);
     }
 }

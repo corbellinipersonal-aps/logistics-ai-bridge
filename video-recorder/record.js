@@ -68,7 +68,7 @@ async function checkServer() {
             
             // Execute scene actions
             if (scene.actions) {
-                await scene.actions(page);
+                await scene.actions(page, scenario.config);
             }
 
             // Calculate remaining time to match scenario duration

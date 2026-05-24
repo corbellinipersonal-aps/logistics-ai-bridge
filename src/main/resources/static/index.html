@@ -227,7 +227,7 @@
             </div>
         </header>
 
-        <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+        <div id="demoControls" style="display: none; gap: 1rem; margin-bottom: 2rem;">
             <button onclick="runDemo()" id="btnDemo" class="btn">🚀 Run Demo Scenarios</button>
             <button onclick="resetDemo()" id="btnReset" class="btn btn-outline">🗑️ Reset Database</button>
         </div>
@@ -371,7 +371,20 @@
             }
         }
 
+        async function initializeDemoControls() {
+            const demoControls = document.getElementById('demoControls');
+            try {
+                const response = await fetch('/api/demo/health');
+                if (response.ok) {
+                    demoControls.style.display = 'flex';
+                }
+            } catch (error) {
+                console.debug('Demo profile inactive; hiding demo controls.');
+            }
+        }
+
         // Poll every 5 seconds
+        initializeDemoControls();
         fetchExtractions();
         setInterval(fetchExtractions, 5000);
     </script>

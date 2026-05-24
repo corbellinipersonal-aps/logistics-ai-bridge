@@ -24,8 +24,8 @@ AI Logistics Automation Hub is a professional-grade Spring Boot backend built ar
 
 ```bash
 # Clone the repository
-git clone https://github.com/HectorCorbellini/ai-logistics-automation-hub.git
-cd ai-logistics-automation-hub
+git clone https://github.com/HectorCorbellini/logistics-ai-bridge.git
+cd logistics-ai-bridge
 
 # Copy and populate environment variables
 cp .env.example .env

@@ -18,6 +18,7 @@ Spring Boot automation system with Groq AI integration.
 **Architecture:**
 - Layered Architecture (Controller → Service → Repository) facilitates component-level security auditing.
 - Constructor injection used throughout — no hidden field injection.
+- **Error Sanitization**: Generic exceptions are sanitized in the `GlobalExceptionHandler` to prevent internal stack trace or logic leakage to API consumers.
 
 **SAST/DAST:** Not explicitly configured in this repository.
 
