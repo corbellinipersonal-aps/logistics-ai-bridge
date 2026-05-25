@@ -49,10 +49,14 @@ Connect logistics data streams to modern communication tools (Slack, Email) by e
 - [x] **Final Sync**: Resolved voice overlaps using naturally-paced narration blocks.
 - [x] **Production Ready**: Generated `final_showcase_with_audio.webm` with synchronized narration.
 - [ ] **Marketing**
-    - [ ] Design high-impact thumbnail.
+    - [x] Publish narrated demo on YouTube ([youtu.be/TULulfYLYKE](https://youtu.be/TULulfYLYKE)).
+    - [ ] Design high-impact thumbnail (YouTube / README).
     - [ ] Global rollout (LinkedIn/Discord).
 
-### Phase 7: Architectural Evolution (Future)
-- [ ] **Hexagonal Architecture**: Define `AIProvider` ports to decouple core logic from specific API adapters.
-- [ ] **Multi-Provider Support**: Add OpenAI and Gemini adapters.
-- [ ] **Advanced Integrations**: Notion, Discord, and scheduled digests.
+### Phase 7: Architectural Evolution (In Progress)
+- [x] **AI provider port**: `AIProvider` interface + `GroqAIProvider` adapter (`WebClient`).
+- [x] **Service decoupling**: `AIService` delegates extraction HTTP to the port (prompt logic remains in the service).
+- [ ] **Notification & persistence ports**: Decouple email, Slack, and JPA behind adapters (full hexagonal boundary).
+- [ ] **Multi-provider support**: OpenAI and Gemini `AIProvider` implementations + config switch.
+- [ ] **Self-hosted / enterprise LLM**: Optional adapter for OpenAI-compatible on-prem APIs (Ollama, vLLM, etc.).
+- [ ] **Advanced integrations**: Notion, Discord, and scheduled digests.

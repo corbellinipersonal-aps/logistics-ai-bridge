@@ -6,6 +6,14 @@
 
 A professional-grade backend service that converts unstructured documents (invoices, emails, reports) into structured JSON using LLM APIs. Built with a modern, non-blocking architecture for high performance and reliability.
 
+## 💰 Business Impact
+
+Automates the **first mile** of logistics back-office work: supplier invoices, dispatch logs, and delay alerts arrive as unstructured text — this service extracts structured fields (vendor, dates, amounts, status, urgency) and routes them to REST, email, or Slack.
+
+- **Less manual re-keying** — replaces copy-paste into spreadsheets or internal tools for the scenarios in [`docs/demo-guide.md`](docs/demo-guide.md).
+- **Faster ops response** — urgent delays and invoice totals surface in a consistent JSON shape for downstream automation.
+- **Adaptable AI backend** — LLM vendor is isolated behind a port/adapter boundary (see [Customization](#-customization--extensibility) below).
+
 ---
 
 ## 🎬 See It in Action
@@ -14,9 +22,19 @@ A professional-grade backend service that converts unstructured documents (invoi
 
 ![AI Logistics Hub Dashboard](demo-assets/dashboard-screenshot.png)
 
-**📹 Watch the full narrated demo (~60s):** [`final_showcase_with_audio.webm`](video-recorder/videos/final_showcase_with_audio.webm)
+**📹 Narrated demo (~60s):**
 
-> 💼 **Hiring?** This project demonstrates production-grade AI integration, reactive-ready architecture, and full-stack delivery — [let's talk](https://www.linkedin.com/in/h%C3%A9ctor-corbellini-726553221/).
+[![Watch the AI Logistics Hub demo on YouTube](https://img.youtube.com/vi/TULulfYLYKE/hqdefault.jpg)](https://youtu.be/TULulfYLYKE)
+
+**▶ [Watch on YouTube — AI Logistics Hub Demo](https://youtu.be/TULulfYLYKE)**
+
+To reproduce the recording locally, see [`RECORDING.md`](RECORDING.md).
+
+> ### 🚀 Work with Me
+>
+> **For employers** — This repo reflects my engineering standards: Java 17, Spring Boot 3, tested AI integration, `WebClient`, CI, Docker, and an automation pipeline (Playwright + Node) for showcase production. [Discuss senior engineering roles on LinkedIn](https://www.linkedin.com/in/h%C3%A9ctor-corbellini-726553221/).
+>
+> **For businesses** — Need to automate data entry from emails/invoices, parse high-volume client messages, or integrate LLMs into a legacy backend with clear boundaries? I build tailored automation pipelines on this foundation. [LinkedIn](https://www.linkedin.com/in/h%C3%A9ctor-corbellini-726553221/) · strategic context in [`ANALYSIS.md`](ANALYSIS.md).
 
 ---
 
@@ -77,22 +95,40 @@ graph LR
 
 ## Project Context & Architecture
 
-This project showcases a professional approach to **AI integration** and **Clean Coding**. It follows a **Layered Architecture** with a focus on **Reactive** patterns:
+This project showcases a professional approach to **AI integration** and **Clean Coding**. It follows a **Layered Architecture** with a growing **ports-and-adapters** boundary for LLM providers:
 
 | Layer | Responsibility |
 |---|---|
 | **Controllers** | Handle HTTP requests and delegate to services |
-| **Services** | Core business logic and AI extraction orchestration |
-| **Adapters** | Modern `WebClient` implementations for external AI providers |
-| **Repositories** | Abstract data access via Spring Data JPA |
-| **DTOs / Models** | Typed data structures for clean API contracts |
+| **Services** | Business logic and extraction orchestration (`AIService` owns prompts) |
+| **Ports** | `AIProvider` — contract for any LLM backend |
+| **Adapters** | `GroqAIProvider` — `WebClient` calls to Groq today |
+| **Repositories** | Spring Data JPA persistence |
+| **DTOs / Models** | Typed API contracts |
 
 ### Architectural Principles
-While pragmatic, the project respects core **Clean Architecture** principles:
-- **Separation of Concerns**: Each layer has a single, well-defined responsibility.
-- **Modern Networking**: Replaced legacy `RestTemplate` with `WebClient` for future-proof scalability.
-- **Resilient Configuration**: Fallback defaults for environment variables ensure zero-config startup for evaluation.
-- **Statelessness**: The service layer remains stateless to support easy scaling.
+
+- **Separation of concerns** — controllers delegate; services orchestrate; adapters talk to external APIs.
+- **Provider decoupling** — Groq-specific HTTP lives in `GroqAIProvider`, not in `AIService`.
+- **Resilient configuration** — secrets and URLs via environment variables / `application.yml`.
+- **Statelessness** — services remain stateless for horizontal scaling.
+
+Details: [`docs/ai-integration.md`](docs/ai-integration.md) · roadmap: [`docs/roadmap.md`](docs/roadmap.md).
+
+---
+
+## 🔌 Customization & Extensibility
+
+The extraction **schema and prompts** stay in the application layer; the **LLM transport** is swappable:
+
+| Today | Planned (same `AIProvider` port) |
+|---|---|
+| Groq (Llama 3.1) via `GroqAIProvider` | OpenAI, Gemini adapters |
+| Config: `GROQ_API_KEY`, `application.yml` | Provider selection via Spring config / profile |
+
+**For compliance-sensitive deployments**, you can add an adapter for your chosen stack — e.g. OpenAI Enterprise, Google Gemini, or a **self-hosted OpenAI-compatible endpoint** (Ollama, vLLM, on-prem Llama) — without rewriting extraction logic. That is an adapter + configuration task, not a greenfield rebuild.
+
+Email, Slack, and persistence are still Spring-coupled; decoupling them behind notification/repository ports is on the [roadmap](docs/roadmap.md) (Phase 7).
 
 ---
 

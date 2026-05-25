@@ -80,3 +80,9 @@ Para evitar procesos manuales, hemos implementado una pipeline de audio:
 2. **Mezcla Inteligente**: `video-recorder/merge_video_audio.js` utiliza **FFmpeg** para:
     - **Sincronizar**: Inyecta los audios en los tiempos exactos del video usando audios ajustados, garantizando velocidad de voz natural sin solapamientos.
     - **Resultado**: Un video final `final_showcase_with_audio.webm` con narrativa fluida y natural.
+
+## 📤 Published demo
+
+The narrated showcase is on YouTube: **[https://youtu.be/TULulfYLYKE](https://youtu.be/TULulfYLYKE)** (linked from the root `README.md`).
+
+Local build artifacts remain under `video-recorder/videos/` and are **gitignored**. Optional: attach `final_showcase_with_audio.webm` to a GitHub Release for direct download.
