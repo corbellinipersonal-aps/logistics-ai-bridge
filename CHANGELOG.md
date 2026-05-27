@@ -9,6 +9,9 @@ All notable changes to this project will be documented in this file.
 - **Project Hygiene**: Removed `node_modules` references and video artifacts from the Java project's `.gitignore` and root structure.
 - **Documentation Migration**: Relocated `RECORDING.md` to the new repository and updated the root `README.md` to reference the external "Dev-Video-Pipeline" for local showcase reproduction.
 
+### Verification
+- **Post-Decoupling Verification**: Successfully executed the complete test suite (31 tests passing) and validated the application's runtime usage. Real-time extraction against Groq API, data population (`/api/demo/populate`), and mock SMTP/Slack dispatches via `verify_usage.sh` remain fully operational in the stripped-down repository.
+
 ## [1.4.0] - 2026-05-27
 
 ### Added
