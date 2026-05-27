@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0] - 2026-05-27
+
+### Added
+- **Strategic Analysis Document**: Introduced `ANALYSIS.md` with portfolio strategy, architecture direction, and success criteria (release history remains in this changelog; phase tracking in `docs/roadmap.md`).
+- **README Business Impact Section**: Added an outcome-focused summary for non-technical reviewers (manual re-keying reduction, faster ops response, adaptable AI backend).
+- **Customization & Extensibility Section**: Documented the `AIProvider` port, `GroqAIProvider` adapter, and planned OpenAI/Gemini/self-hosted options with honest scope boundaries.
+- **Expanded “Work with Me” CTA**: Dual audience call-to-action for employers and business/consulting inquiries, linked to LinkedIn and `ANALYSIS.md`.
+- **YouTube Demo Publishing**: Embedded a clickable YouTube thumbnail and link in the README ([youtu.be/TULulfYLYKE](https://youtu.be/TULulfYLYKE)); updated `RECORDING.md` with the published URL.
+
+### Changed
+- **AI Integration Guide Rewrite**: Updated `docs/ai-integration.md` to reflect the current port/adapter design (`AIProvider`, `GroqAIProvider`, `WebClient`) and steps for adding new LLM backends.
+- **Roadmap Phase 7 Refresh**: Marked `AIProvider` and `GroqAIProvider` as complete; split remaining hexagonal work (notification/persistence ports, multi-provider config) into explicit checklist items; recorded YouTube publication under marketing.
+- **Contributing Guide Alignment**: Updated `CONTRIBUTING.md` for `master` as default branch, demo profile, `WebClient` conventions, corrected Swagger/Issues URLs, and expanded project structure (`port/`, `adapter/`, `demo/`).
+- **README Architecture Table**: Replaced generic layered description with ports-and-adapters terminology aligned to the codebase.
+
 ## [1.3.0] - 2026-05-24
 
 ### Added

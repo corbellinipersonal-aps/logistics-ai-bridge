@@ -1,6 +1,6 @@
 # Project Analysis
 
-> **Strategic analysis** — Reconstructs the intended contents of the missing `Strategy.md`, inferred from project documentation and the AUTOM-HUB archive (`CUIDADO-RECORDAR`, `hector-repo-standard`).  
+> **Strategic analysis** — Reconstructs the intended contents of `Strategy.md`, inferred from project documentation and the AUTOM-HUB archive (`CUIDADO-RECORDAR`, `hector-repo-standard`).  
 > For release history and shipped changes, see [`CHANGELOG.md`](CHANGELOG.md). For phase checklists and future work, see [`docs/roadmap.md`](docs/roadmap.md).
 
 ---
@@ -11,7 +11,7 @@
 
 **AI Logistics Automation Hub** (`logistics-ai-bridge`) is a portfolio-grade backend that turns unstructured logistics text (invoices, shipment emails, delay notices) into validated JSON and routes it to the channels operations teams already use (REST, email, Slack).
 
-The strategic goal is not “another CRUD API” but a **credible demonstration** of:
+The strategic goal is not “another CRUD API” but a **real-world example** of:
 
 - Production-style **LLM integration** with strict JSON contracts
 - **Clean, evolvable architecture** (ports/adapters toward hexagonal design)
