@@ -56,6 +56,7 @@ Connect logistics data streams to modern communication tools (Slack, Email) by e
 ### Phase 7: Architectural Evolution (In Progress)
 - [x] **AI provider port**: `AIProvider` interface + `GroqAIProvider` adapter (`WebClient`).
 - [x] **Service decoupling**: `AIService` delegates extraction HTTP to the port (prompt logic remains in the service).
+- [x] **Standalone Video Tooling**: Decoupled the Playwright-based recording pipeline into a standalone repository (`dev-video-automation`) to separate infrastructure from business logic.
 - [ ] **Notification & persistence ports**: Decouple email, Slack, and JPA behind adapters (full hexagonal boundary).
 - [ ] **Multi-provider support**: OpenAI and Gemini `AIProvider` implementations + config switch.
 - [ ] **Self-hosted / enterprise LLM**: Optional adapter for OpenAI-compatible on-prem APIs (Ollama, vLLM, etc.).

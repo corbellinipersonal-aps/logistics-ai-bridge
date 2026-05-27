@@ -37,14 +37,5 @@ dependency-reduced-pom.xml
 application-secret.yml
 application-secret.properties
 
-# Node.js — video-recorder tooling dependencies
-node_modules/
-
 # H2 persistent database files (generated at runtime)
 h2_data/
-
-# Generated video & audio artifacts from the recording pipeline
-video-recorder/videos/
-
-# Debug screenshot captured by record.js on failure
-video-recorder/videos/error-screenshot.png

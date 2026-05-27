@@ -61,7 +61,7 @@ Three logistics narratives drive demos and documentation:
 2. **Status updates & delay alerts** — flag `Delayed` / `isUrgent` for operations.
 3. **Operations digest** — consolidate multi-entry text into one summary JSON.
 
-Supporting assets: `demo-assets/`, `docs/demo-guide.md`, `/index.html` dashboard, `video-recorder/` pipeline.
+Supporting assets: `demo-assets/`, `docs/demo-guide.md`, `/index.html` dashboard.
 
 ### 4. Security & operability by default
 

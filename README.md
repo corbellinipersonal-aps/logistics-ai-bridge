@@ -28,11 +28,11 @@ Automates the **first mile** of logistics back-office work: supplier invoices, d
 
 **▶ [Watch on YouTube — AI Logistics Hub Demo](https://youtu.be/TULulfYLYKE)**
 
-To reproduce the recording locally, see [`RECORDING.md`](RECORDING.md).
+To reproduce the recording locally, see [dev-video-automation](https://github.com/HectorCorbellini/dev-video-automation).
 
 > ### 🚀 Work with Me
 >
-> **For employers** — This repo reflects my engineering standards: Java 17, Spring Boot 3, tested AI integration, `WebClient`, CI, Docker, and an automation pipeline (Playwright + Node) for showcase production. [Discuss senior engineering roles on LinkedIn](https://www.linkedin.com/in/h%C3%A9ctor-corbellini-726553221/).
+> **For employers** — This repo reflects my engineering standards: Java 17, Spring Boot 3, tested AI integration, `WebClient`, CI, and Docker. [Discuss senior engineering roles on LinkedIn](https://www.linkedin.com/in/h%C3%A9ctor-corbellini-726553221/).
 >
 > **For businesses** — Need to automate data entry from emails/invoices, parse high-volume client messages, or integrate LLMs into a legacy backend with clear boundaries? I build tailored automation pipelines on this foundation. [LinkedIn](https://www.linkedin.com/in/h%C3%A9ctor-corbellini-726553221/) · strategic context in [`ANALYSIS.md`](ANALYSIS.md).
 
@@ -78,6 +78,9 @@ graph LR
 2. **Service Layer** — Applies extraction rules and coordinates with the selected AI provider.
 3. **LLM Adapter** — Sends a structured prompt to Groq using non-blocking **WebClient** and receives pure JSON.
 4. **Output** — Validated JSON is persisted in H2, dispatched to Email/Slack, or returned via REST.
+
+### 🌉 The "Bridge" Concept
+While the **Hub** represents the central automation station, the **Bridge** (`logistics-ai-bridge`) describes the core architectural function: connecting unstructured logistics data to modern AI processing, and bridging the gap between raw document inputs and the operational tools teams use daily.
 
 ---
 

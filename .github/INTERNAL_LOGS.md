@@ -2,6 +2,14 @@
 
 This file contains historical logs and development thoughts from past sessions.
 
+## 2026-05-27: Architectural Decoupling (Video Pipeline)
+
+- Decoupled the `video-recorder` Node.js/Playwright pipeline from the main Java repository.
+- Moved all video automation assets to a standalone repository: `dev-video-automation`.
+- Updated `README.md` and `.gitignore` to remove traces of the Node.js tooling from the backend project.
+- Relocated `RECORDING.md` to serve as the primary guide for the new standalone tool.
+- Verified that the main project now purely represents the Java/AI backend, improving portfolio presentation.
+
 ## 2026-04-25: Documentation Cleanup Session
 
 - Identified inconsistencies between README claims and implementation (Multi-provider support).

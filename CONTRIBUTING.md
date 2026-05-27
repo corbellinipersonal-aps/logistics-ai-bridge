@@ -135,7 +135,6 @@ src/main/java/com/example/apibridge/
 
 demo-assets/         # Sample input texts used for live demos
 docs/                # Integration guide, demo guide, roadmap, troubleshooting
-video-recorder/      # Playwright showcase pipeline (optional; not required for API work)
 ```
 
 ## License

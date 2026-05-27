@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.0] - 2026-05-27
+
+### Changed
+- **Architectural Decoupling**: Successfully extracted the `video-recorder` Node.js/Playwright pipeline into its own standalone repository: [dev-video-automation](https://github.com/HectorCorbellini/dev-video-automation). This move eliminates the "Accidental Monolith" pattern and separates backend business logic from media/automation infrastructure.
+- **Project Hygiene**: Removed `node_modules` references and video artifacts from the Java project's `.gitignore` and root structure.
+- **Documentation Migration**: Relocated `RECORDING.md` to the new repository and updated the root `README.md` to reference the external "Dev-Video-Pipeline" for local showcase reproduction.
+
 ## [1.4.0] - 2026-05-27
 
 ### Added
