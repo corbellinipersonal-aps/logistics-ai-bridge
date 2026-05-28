@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.9.0] - 2026-05-28
+
+### Changed
+- **`verify_usage.sh` hardened**: Rewrote the smoke test script with pre-flight reachability check, dynamic extraction ID resolution (parsed from response body, falls back to `GET /extractions`), colored pass/fail output per step, a prompt injection rejection assertion (step 6), a final summary, and a non-zero exit code on failure for CI use. Requires `curl` and `jq`.
+
 ## [1.8.0] - 2026-05-28
 
 ### Security

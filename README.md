@@ -149,4 +149,16 @@ Email, Slack, and persistence are each behind their own port (`NotificationPort`
 
 Explore real-world logistics automation stories (Delayed Shipment Alerts, Invoice Routing, and Operations Digests) in our [Showcase Guide (docs/demo-guide.md)](docs/demo-guide.md).
 
+To verify the running application end-to-end (AI extraction, email, Slack, and prompt injection rejection), run the included smoke test:
+
+```bash
+# Requires curl and jq
+./verify_usage.sh
+
+# Custom target or email
+./verify_usage.sh http://localhost:8080/api your@email.com
+```
+
+The script exits with a non-zero code on any failure, making it suitable for CI post-deploy checks.
+
 ---
