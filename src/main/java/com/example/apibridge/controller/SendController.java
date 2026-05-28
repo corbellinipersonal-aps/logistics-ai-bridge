@@ -3,100 +3,100 @@ package com.example.apibridge.controller;
 import com.example.apibridge.dto.AIResponse;
 import com.example.apibridge.dto.ExtractionRequest;
 import com.example.apibridge.dto.ExtractionResponse;
+import com.example.apibridge.port.NotificationPort;
 import com.example.apibridge.service.AIService;
-import com.example.apibridge.service.EmailSenderService;
 import com.example.apibridge.service.ExtractionService;
-import com.example.apibridge.service.SlackSenderService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/send")
-@io.swagger.v3.oas.annotations.tags.Tag(name = "Sending Operations", description = "Endpoints for triggering email and Slack notifications")
+@Tag(name = "Sending Operations", description = "Endpoints for triggering email and Slack notifications")
 public class SendController {
+
     private final ExtractionService extractionService;
-    private final EmailSenderService emailSenderService;
-    private final SlackSenderService slackSenderService;
     private final AIService aiService;
+    private final NotificationPort emailNotifier;
+    private final NotificationPort slackNotifier;
 
     public SendController(ExtractionService extractionService,
-            EmailSenderService emailSenderService,
-            SlackSenderService slackSenderService,
-            AIService aiService) {
+                          AIService aiService,
+                          @Qualifier("email") NotificationPort emailNotifier,
+                          @Qualifier("slack") NotificationPort slackNotifier) {
         this.extractionService = extractionService;
-        this.emailSenderService = emailSenderService;
-        this.slackSenderService = slackSenderService;
         this.aiService = aiService;
+        this.emailNotifier = emailNotifier;
+        this.slackNotifier = slackNotifier;
     }
 
     @PostMapping("/email/{id}")
-    @io.swagger.v3.oas.annotations.Operation(summary = "Send existing extraction to email", description = "Sends a pre-existing extraction record (by ID) to the specified email address.")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Email sent successfully")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Extraction not found")
+    @Operation(summary = "Send existing extraction to email",
+               description = "Sends a pre-existing extraction record (by ID) to the specified email address.")
+    @ApiResponse(responseCode = "200", description = "Email sent successfully")
+    @ApiResponse(responseCode = "404", description = "Extraction not found")
     public ResponseEntity<String> sendToEmail(@PathVariable Long id, @RequestParam String to) {
         ExtractionResponse extraction = extractionService.fetchExtractionById(id);
-        emailSenderService.sendExtractionByEmail(to, extraction);
+        emailNotifier.sendExtraction(to, extraction);
         return ResponseEntity.ok("Sent to email");
     }
 
     @PostMapping("/slack/{id}")
-    @io.swagger.v3.oas.annotations.Operation(summary = "Send existing extraction to Slack", description = "Sends a pre-existing extraction record (by ID) to the configured Slack channel.")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Message sent to Slack successfully")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Extraction not found")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Internal server error")
+    @Operation(summary = "Send existing extraction to Slack",
+               description = "Sends a pre-existing extraction record (by ID) to the configured Slack channel.")
+    @ApiResponse(responseCode = "200", description = "Message sent to Slack successfully")
+    @ApiResponse(responseCode = "404", description = "Extraction not found")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     public ResponseEntity<String> sendToSlack(@PathVariable Long id) {
         ExtractionResponse extraction = extractionService.fetchExtractionById(id);
-        slackSenderService.sendExtractionToSlack(extraction);
+        slackNotifier.sendExtraction(null, extraction);
         return ResponseEntity.ok("Sent to Slack");
     }
 
     @PostMapping("/ai/email")
-    @io.swagger.v3.oas.annotations.Operation(summary = "Extract and send to email", description = "Extracts data from raw text using AI and sends it to an email.")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Extraction sent to email")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Failed to extract data")
+    @Operation(summary = "Extract and send to email",
+               description = "Extracts data from raw text using AI and sends it to an email.")
+    @ApiResponse(responseCode = "200", description = "Extraction sent to email")
+    @ApiResponse(responseCode = "400", description = "Failed to extract data")
     public ResponseEntity<String> sendAIExtractionToEmail(@Valid @RequestBody ExtractionRequest request,
-            @RequestParam String to) {
+                                                          @RequestParam String to) {
         AIResponse aiResponse = aiService.extractData(request);
         if (aiResponse == null)
             return ResponseEntity.badRequest().body("Failed to extract data from text.");
-
-        // Persist via service
         extractionService.saveAIExtraction(aiResponse);
-
-        emailSenderService.sendAIExtractionByEmail(to, aiResponse);
+        emailNotifier.sendAIExtraction(to, aiResponse);
         return ResponseEntity.ok("Sent AI extraction to email");
     }
 
     @PostMapping("/ai/slack")
-    @io.swagger.v3.oas.annotations.Operation(summary = "Extract and send to Slack", description = "Extracts data from raw text using AI and sends it to Slack.")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Extraction sent to Slack")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Failed to extract data")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Internal server error")
+    @Operation(summary = "Extract and send to Slack",
+               description = "Extracts data from raw text using AI and sends it to Slack.")
+    @ApiResponse(responseCode = "200", description = "Extraction sent to Slack")
+    @ApiResponse(responseCode = "400", description = "Failed to extract data")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     public ResponseEntity<String> sendAIExtractionToSlack(@Valid @RequestBody ExtractionRequest request) {
         AIResponse aiResponse = aiService.extractData(request);
         if (aiResponse == null)
             return ResponseEntity.badRequest().body("Failed to extract data from text.");
-
-        // Persist via service
         extractionService.saveAIExtraction(aiResponse);
-
-        slackSenderService.sendAIExtractionToSlack(aiResponse);
+        slackNotifier.sendAIExtraction(null, aiResponse);
         return ResponseEntity.ok("Sent AI extraction to Slack");
     }
 
     @PostMapping("/ai/extract")
-    @io.swagger.v3.oas.annotations.Operation(summary = "Extract data using AI", description = "Returns the structured JSON data extracted from raw text without sending it anywhere.")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Data extracted successfully")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Failed to extract data")
+    @Operation(summary = "Extract data using AI",
+               description = "Returns the structured JSON data extracted from raw text without sending it anywhere.")
+    @ApiResponse(responseCode = "200", description = "Data extracted successfully")
+    @ApiResponse(responseCode = "400", description = "Failed to extract data")
     public ResponseEntity<AIResponse> extractData(@Valid @RequestBody ExtractionRequest request) {
         AIResponse aiResponse = aiService.extractData(request);
         if (aiResponse == null)
             return ResponseEntity.badRequest().build();
-
-        // Persist via service
         extractionService.saveAIExtraction(aiResponse);
-
         return ResponseEntity.ok(aiResponse);
     }
 }

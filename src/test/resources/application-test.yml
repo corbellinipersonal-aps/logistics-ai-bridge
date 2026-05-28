@@ -23,3 +23,6 @@ groq:
     key: mock-key
     url: http://localhost/mock-groq
   model: mock-model
+
+ai:
+  provider: groq

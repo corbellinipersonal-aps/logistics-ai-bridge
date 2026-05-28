@@ -1,5 +1,7 @@
 package com.example.apibridge.demo;
 
+import com.example.apibridge.adapter.notification.EmailNotificationAdapter;
+import com.example.apibridge.adapter.notification.SlackNotificationAdapter;
 import com.example.apibridge.dto.AIResponse;
 import com.example.apibridge.dto.ExtractionRequest;
 import com.example.apibridge.port.AIProvider;
@@ -11,11 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import com.example.apibridge.service.EmailSenderService;
-import com.example.apibridge.service.SlackSenderService;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -40,18 +40,18 @@ public class DemoStabilityTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private EmailSenderService emailSenderService;
+    private EmailNotificationAdapter emailNotifier;
 
     @MockBean
-    private SlackSenderService slackSenderService;
+    private SlackNotificationAdapter slackNotifier;
 
     @MockBean
     private AIProvider aiProvider;
 
     @BeforeEach
     public void setUp() {
-        doNothing().when(emailSenderService).sendAIExtractionByEmail(any(), any());
-        doNothing().when(slackSenderService).sendAIExtractionToSlack(any());
+        doNothing().when(emailNotifier).sendAIExtraction(any(), any());
+        doNothing().when(slackNotifier).sendAIExtraction(any(), any());
     }
 
     @Test

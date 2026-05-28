@@ -48,6 +48,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(400).body(error);
     }
 
+    @ExceptionHandler(PromptInjectionException.class)
+    public ResponseEntity<Map<String, String>> handlePromptInjectionException(PromptInjectionException e) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", "Bad Request");
+        error.put("message", e.getMessage());
+        return ResponseEntity.status(400).body(error);
+    }
+
     @ExceptionHandler(AIExtractionException.class)
     public ResponseEntity<Map<String, String>> handleAIExtractionException(AIExtractionException e) {
         Map<String, String> error = new HashMap<>();

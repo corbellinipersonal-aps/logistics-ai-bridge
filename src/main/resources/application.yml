@@ -35,3 +35,39 @@ groq:
     key: ${GROQ_API_KEY:your_key_here}
     url: https://api.groq.com/openai/v1/chat/completions
   model: llama-3.1-8b-instant
+
+# --- AI Provider Selection ---
+# Set ai.provider to one of: groq (default), openai, gemini
+ai:
+  provider: groq
+
+openai:
+  api:
+    key: ${OPENAI_API_KEY:your_openai_key_here}
+    url: https://api.openai.com/v1/chat/completions
+  model: gpt-4o-mini
+
+gemini:
+  api:
+    key: ${GEMINI_API_KEY:your_gemini_key_here}
+    url: https://generativelanguage.googleapis.com/v1beta/models
+  model: gemini-1.5-flash
+
+resilience4j:
+  retry:
+    instances:
+      ai-provider:
+        max-attempts: 3
+        wait-duration: 1s
+        retry-exceptions:
+          - com.example.apibridge.exception.AIExtractionException
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+  circuitbreaker:
+    instances:
+      ai-provider:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+        register-health-indicator: true

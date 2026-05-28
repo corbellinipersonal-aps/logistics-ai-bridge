@@ -5,7 +5,7 @@ FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
 # Copy the Maven build output (fat jar) into the container
-COPY target/autom-hub-0.0.1-SNAPSHOT.jar app.jar
+COPY target/apibridge-0.0.1-SNAPSHOT.jar app.jar
 
 # Copy demo assets so /api/demo/populate can load relative path "demo-assets"
 COPY demo-assets ./demo-assets

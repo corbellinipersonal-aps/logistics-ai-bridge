@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.8.0] - 2026-05-28
+
+### Security
+- **Prompt injection mitigation**: Introduced `PromptSanitizer` with two defensive layers applied before any user text reaches the LLM:
+  - Heuristic keyword filter — rejects input containing known injection phrases (`"ignore all previous instructions"`, `"system override"`, `"jailbreak"`, and 12 others) with a `PromptInjectionException`.
+  - Structural delimiters — wraps validated text in `<user_input>` XML tags; the system prompt explicitly instructs the model to treat anything inside those tags as data, never as instructions.
+- **`PromptInjectionException`**: New exception type mapped to `400 Bad Request` in `GlobalExceptionHandler`.
+- **`AIService` hardened**: `buildPrompt()` now routes all user text through `PromptSanitizer.sanitize()` before embedding it in the prompt.
+
+## [1.7.0] - 2026-05-28
+
+### Added
+- **Multi-provider AI support**: Added `OpenAIProvider` and `GeminiAIProvider` adapters implementing the existing `AIProvider` port. Switch providers with a single line in `application.yml` (`ai.provider: groq | openai | gemini`). Each adapter is gated with `@ConditionalOnProperty` so only the selected one is loaded.
+- **Resilience4j retry + circuit breaker**: Introduced `AIProviderResilienceDecorator`, a shared Spring component that wraps every AI provider call with a configurable retry (3 attempts, 1 s back-off) and circuit breaker (opens at 50 % failure rate over 10 calls, 30 s wait). All three adapters delegate to it via `resilience.execute(() -> doExtract(...))`.
+- **Resilience config in `application.yml`**: Added `resilience4j.retry` and `resilience4j.circuitbreaker` blocks under the `ai-provider` instance name — thresholds are tunable without code changes.
+
+### Changed
+- `GroqAIProvider` now uses `AIProviderResilienceDecorator` and splits the HTTP call into a private `doExtract` method, keeping `extract` clean.
+- `GroqAIProvider` annotated with `@ConditionalOnProperty(matchIfMissing = true)` so it remains the default when `ai.provider` is not set.
+
+### Tests
+- `GroqAIProviderTest` updated to pass a real `AIProviderResilienceDecorator` backed by default in-memory registries.
+
+## [1.6.0] - 2026-05-28
+
+### Changed
+- **Notification ports/adapters**: Introduced `NotificationPort` interface and moved all email/Slack logic out of the service layer into dedicated adapters — `EmailNotificationAdapter` and `SlackNotificationAdapter`. `EmailSenderService` and `SlackSenderService` have been removed.
+- **Persistence port/adapter**: Introduced `ExtractionStore` interface and moved all JPA/Hibernate details into `JpaExtractionStore`. `ExtractionService` now depends solely on the port, with no framework types in its import list.
+- **SendController decoupled**: `SendController` now injects `NotificationPort` by qualifier (`email` / `slack`) instead of concrete service classes.
+- **Dockerfile fix**: Corrected the `COPY` path from `autom-hub-0.0.1-SNAPSHOT.jar` to `apibridge-0.0.1-SNAPSHOT.jar` to match the Maven `artifactId`.
+- **Dead bean removed**: Removed the unused `RestTemplate` bean and its import from `RestConfig`.
+
+### Tests
+- `ExtractionServiceTest` updated to mock `ExtractionStore` instead of `ExtractionRepository` + `ExtractionMapper`.
+- `SlackSenderServiceTest` replaced by `SlackNotificationAdapterTest` under the adapter package.
+- `SendControllerAIIntegrationTest` and `SendControllerIntegrationTest` updated to mock/stub `NotificationPort` beans by qualifier.
+
 ## [1.5.0] - 2026-05-27
 
 ### Changed

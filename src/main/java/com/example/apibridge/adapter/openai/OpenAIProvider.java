@@ -1,4 +1,4 @@
-package com.example.apibridge.adapter.groq;
+package com.example.apibridge.adapter.openai;
 
 import com.example.apibridge.adapter.resilience.AIProviderResilienceDecorator;
 import com.example.apibridge.dto.AIResponse;
@@ -17,29 +17,32 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+/**
+ * OpenAI adapter for {@link AIProvider}.
+ * Activate by setting {@code ai.provider=openai} in application.yml.
+ * Requires {@code openai.api.key} and optionally {@code openai.model}.
+ */
 @Component
-@ConditionalOnProperty(name = "ai.provider", havingValue = "groq", matchIfMissing = true)
-public class GroqAIProvider implements AIProvider {
+@ConditionalOnProperty(name = "ai.provider", havingValue = "openai")
+public class OpenAIProvider implements AIProvider {
 
-    private static final Logger log = LoggerFactory.getLogger(GroqAIProvider.class);
+    private static final Logger log = LoggerFactory.getLogger(OpenAIProvider.class);
 
-    private final String groqApiKey;
-    private final String groqModel;
-    private final String groqApiUrl;
+    private final String apiKey;
+    private final String model;
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
     private final AIProviderResilienceDecorator resilience;
 
-    public GroqAIProvider(@Value("${groq.api.key}") String groqApiKey,
-            @Value("${groq.model}") String groqModel,
-            @Value("${groq.api.url}") String groqApiUrl,
-            WebClient.Builder webClientBuilder,
-            ObjectMapper objectMapper,
-            AIProviderResilienceDecorator resilience) {
-        this.groqApiKey = groqApiKey;
-        this.groqModel = groqModel;
-        this.groqApiUrl = groqApiUrl;
-        this.webClient = webClientBuilder.baseUrl(groqApiUrl).build();
+    public OpenAIProvider(@Value("${openai.api.key}") String apiKey,
+                          @Value("${openai.model:gpt-4o-mini}") String model,
+                          @Value("${openai.api.url:https://api.openai.com/v1/chat/completions}") String apiUrl,
+                          WebClient.Builder webClientBuilder,
+                          ObjectMapper objectMapper,
+                          AIProviderResilienceDecorator resilience) {
+        this.apiKey = apiKey;
+        this.model = model;
+        this.webClient = webClientBuilder.baseUrl(apiUrl).build();
         this.objectMapper = objectMapper;
         this.resilience = resilience;
     }
@@ -47,7 +50,7 @@ public class GroqAIProvider implements AIProvider {
     @Override
     public AIResponse extract(String prompt) {
         ObjectNode requestBody = objectMapper.createObjectNode();
-        requestBody.put("model", groqModel);
+        requestBody.put("model", model);
 
         ArrayNode messages = requestBody.putArray("messages");
         messages.addObject()
@@ -63,21 +66,21 @@ public class GroqAIProvider implements AIProvider {
 
     private AIResponse doExtract(ObjectNode requestBody) {
         try {
-            log.info("Calling Groq API via WebClient (Model: {})...", groqModel);
+            log.info("Calling OpenAI API via WebClient (Model: {})...", model);
 
             String response = webClient.post()
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + groqApiKey)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
                     .bodyValue(requestBody.toString())
                     .retrieve()
                     .onStatus(status -> status.isError(), clientResponse ->
-                        clientResponse.bodyToMono(String.class)
-                            .flatMap(errorBody -> Mono.error(new AIExtractionException("Groq API error: " + errorBody)))
+                            clientResponse.bodyToMono(String.class)
+                                    .flatMap(errorBody -> Mono.error(new AIExtractionException("OpenAI API error: " + errorBody)))
                     )
                     .bodyToMono(String.class)
                     .block();
 
-            log.info("Groq API call successful.");
+            log.info("OpenAI API call successful.");
 
             com.fasterxml.jackson.databind.JsonNode rootNode = objectMapper.readTree(response);
             String content = rootNode.path("choices").get(0).path("message").path("content").asText();
@@ -87,20 +90,15 @@ public class GroqAIProvider implements AIProvider {
             log.info("Successfully extracted data for company: {}", result.getCompanyName());
             return result;
         } catch (Exception e) {
-            log.error("Groq extraction failed: {}", e.getMessage());
+            log.error("OpenAI extraction failed: {}", e.getMessage());
             throw new AIExtractionException("AI Extraction failed: " + e.getMessage(), e);
         }
     }
 
-    static String stripMarkdownFences(String content) {
-        if (content.startsWith("```json")) {
-            content = content.substring(7);
-        } else if (content.startsWith("```")) {
-            content = content.substring(3);
-        }
-        if (content.endsWith("```")) {
-            content = content.substring(0, content.length() - 3);
-        }
+    private static String stripMarkdownFences(String content) {
+        if (content.startsWith("```json")) content = content.substring(7);
+        else if (content.startsWith("```")) content = content.substring(3);
+        if (content.endsWith("```")) content = content.substring(0, content.length() - 3);
         return content.trim();
     }
 }

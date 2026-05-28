@@ -1,8 +1,11 @@
 package com.example.apibridge.adapter.groq;
 
+import com.example.apibridge.adapter.resilience.AIProviderResilienceDecorator;
 import com.example.apibridge.dto.AIResponse;
 import com.example.apibridge.exception.AIExtractionException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.retry.RetryRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +36,7 @@ public class GroqAIProviderTest {
 
     private ObjectMapper objectMapper = new ObjectMapper();
     private GroqAIProvider groqAIProvider;
+    private AIProviderResilienceDecorator resilience;
 
     private static final String API_URL = "http://mock-groq/v1/chat/completions";
     private static final String API_KEY = "mock-key";
@@ -40,9 +44,10 @@ public class GroqAIProviderTest {
 
     @BeforeEach
     public void setUp() {
+        resilience = new AIProviderResilienceDecorator(RetryRegistry.ofDefaults(), CircuitBreakerRegistry.ofDefaults());
         when(webClientBuilder.baseUrl(anyString())).thenReturn(webClientBuilder);
         when(webClientBuilder.build()).thenReturn(webClient);
-        groqAIProvider = new GroqAIProvider(API_KEY, MODEL, API_URL, webClientBuilder, objectMapper);
+        groqAIProvider = new GroqAIProvider(API_KEY, MODEL, API_URL, webClientBuilder, objectMapper, resilience);
     }
 
     private void mockWebClient(String response) {

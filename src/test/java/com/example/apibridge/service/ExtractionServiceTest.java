@@ -3,9 +3,7 @@ package com.example.apibridge.service;
 import com.example.apibridge.dto.AIResponse;
 import com.example.apibridge.dto.ExtractionResponse;
 import com.example.apibridge.exception.ResourceNotFoundException;
-import com.example.apibridge.mapper.ExtractionMapper;
-import com.example.apibridge.model.Extraction;
-import com.example.apibridge.repository.ExtractionRepository;
+import com.example.apibridge.port.ExtractionStore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -14,19 +12,14 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class ExtractionServiceTest {
 
     @Mock
-    private ExtractionRepository extractionRepository;
-
-    @Mock
-    private ExtractionMapper extractionMapper;
+    private ExtractionStore store;
 
     @InjectMocks
     private ExtractionService extractionService;
@@ -39,56 +32,43 @@ public class ExtractionServiceTest {
     @Test
     public void testSaveAIExtraction() {
         AIResponse aiResponse = new AIResponse();
-        Extraction extraction = new Extraction();
-        Extraction savedExtraction = new Extraction();
-        ExtractionResponse expectedResponse = new ExtractionResponse();
+        ExtractionResponse expected = new ExtractionResponse();
+        when(store.save(aiResponse)).thenReturn(expected);
 
-        when(extractionMapper.toEntity(aiResponse)).thenReturn(extraction);
-        when(extractionRepository.save(extraction)).thenReturn(savedExtraction);
-        when(extractionMapper.toDto(savedExtraction)).thenReturn(expectedResponse);
+        ExtractionResponse actual = extractionService.saveAIExtraction(aiResponse);
 
-        ExtractionResponse actualResponse = extractionService.saveAIExtraction(aiResponse);
-
-        assertNotNull(actualResponse);
-        assertEquals(expectedResponse, actualResponse);
-        verify(extractionRepository, times(1)).save(extraction);
+        assertNotNull(actual);
+        assertEquals(expected, actual);
+        verify(store, times(1)).save(aiResponse);
     }
 
     @Test
     public void testFetchAllExtractions() {
-        Extraction e1 = new Extraction();
-        Extraction e2 = new Extraction();
-        when(extractionRepository.findAll()).thenReturn(Arrays.asList(e1, e2));
-        when(extractionMapper.toDto(any(Extraction.class))).thenReturn(new ExtractionResponse());
+        when(store.findAll()).thenReturn(Arrays.asList(new ExtractionResponse(), new ExtractionResponse()));
 
         List<ExtractionResponse> results = extractionService.fetchAllExtractions();
 
         assertEquals(2, results.size());
-        verify(extractionMapper, times(2)).toDto(any(Extraction.class));
+        verify(store, times(1)).findAll();
     }
 
     @Test
     public void testFetchExtractionByIdFound() {
         Long id = 1L;
-        Extraction extraction = new Extraction();
-        ExtractionResponse expectedResponse = new ExtractionResponse();
+        ExtractionResponse expected = new ExtractionResponse();
+        when(store.findById(id)).thenReturn(expected);
 
-        when(extractionRepository.findById(id)).thenReturn(Optional.of(extraction));
-        when(extractionMapper.toDto(extraction)).thenReturn(expectedResponse);
+        ExtractionResponse actual = extractionService.fetchExtractionById(id);
 
-        ExtractionResponse actualResponse = extractionService.fetchExtractionById(id);
-
-        assertNotNull(actualResponse);
-        assertEquals(expectedResponse, actualResponse);
+        assertNotNull(actual);
+        assertEquals(expected, actual);
     }
 
     @Test
     public void testFetchExtractionByIdNotFoundThrowsException() {
         Long id = 99L;
-        when(extractionRepository.findById(id)).thenReturn(Optional.empty());
+        when(store.findById(id)).thenThrow(new ResourceNotFoundException("Extraction not found with ID: " + id));
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            extractionService.fetchExtractionById(id);
-        });
+        assertThrows(ResourceNotFoundException.class, () -> extractionService.fetchExtractionById(id));
     }
 }

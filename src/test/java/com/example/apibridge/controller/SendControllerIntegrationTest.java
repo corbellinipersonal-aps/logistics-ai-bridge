@@ -1,17 +1,24 @@
 package com.example.apibridge.controller;
 
+import com.example.apibridge.adapter.notification.EmailNotificationAdapter;
+import com.example.apibridge.adapter.notification.SlackNotificationAdapter;
+import com.example.apibridge.dto.AIResponse;
 import com.example.apibridge.dto.ExtractionResponse;
-import com.example.apibridge.util.MessageFormatter;
 import com.example.apibridge.model.Extraction;
+import com.example.apibridge.port.NotificationPort;
 import com.example.apibridge.repository.ExtractionRepository;
+import com.example.apibridge.util.MessageFormatter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -20,29 +27,37 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class SendControllerIntegrationTest {
-    // --- TEST-ONLY: Mock beans for email and Slack sending ---
-    // These replace the real implementations ONLY during tests.
-    // Production uses the real EmailSenderService and SlackSenderService.
+
+    // Replace real notification adapters with no-op stubs for integration tests
     @org.springframework.boot.test.context.TestConfiguration
-    static class MockConfig {
-        @org.springframework.context.annotation.Bean
-        public com.example.apibridge.service.EmailSenderService emailSenderService(
-                org.springframework.mail.javamail.JavaMailSender mailSender,
-                org.springframework.core.env.Environment env) {
-            return new com.example.apibridge.service.EmailSenderService(mailSender, env) {
+    static class MockNotificationConfig {
+
+        @Bean
+        @Qualifier("email")
+        public NotificationPort emailNotifier() {
+            return new NotificationPort() {
                 @Override
-                public void sendExtractionByEmail(String to, com.example.apibridge.dto.ExtractionResponse extraction) {
-                    System.out.printf("[MOCK EMAIL] To: %s\\n%s\\n", to, MessageFormatter.formatExtraction(extraction));
+                public void sendExtraction(String recipient, ExtractionResponse extraction) {
+                    System.out.printf("[MOCK EMAIL] To: %s%n%s%n", recipient, MessageFormatter.formatExtraction(extraction));
+                }
+                @Override
+                public void sendAIExtraction(String recipient, AIResponse aiResponse) {
+                    System.out.printf("[MOCK EMAIL] To: %s%n%s%n", recipient, MessageFormatter.formatAIExtraction(aiResponse));
                 }
             };
         }
 
-        @org.springframework.context.annotation.Bean
-        public com.example.apibridge.service.SlackSenderService slackSenderService() {
-            return new com.example.apibridge.service.SlackSenderService("mock-webhook-url", com.slack.api.Slack.getInstance()) {
+        @Bean
+        @Qualifier("slack")
+        public NotificationPort slackNotifier() {
+            return new NotificationPort() {
                 @Override
-                public void sendExtractionToSlack(com.example.apibridge.dto.ExtractionResponse extraction) {
-                    System.out.printf("[MOCK SLACK] Message: %s\\n", MessageFormatter.formatExtraction(extraction));
+                public void sendExtraction(String recipient, ExtractionResponse extraction) {
+                    System.out.printf("[MOCK SLACK] %s%n", MessageFormatter.formatExtraction(extraction));
+                }
+                @Override
+                public void sendAIExtraction(String recipient, AIResponse aiResponse) {
+                    System.out.printf("[MOCK SLACK] %s%n", MessageFormatter.formatAIExtraction(aiResponse));
                 }
             };
         }
@@ -50,6 +65,7 @@ class SendControllerIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
+
     @Autowired
     private ExtractionRepository extractionRepository;
 

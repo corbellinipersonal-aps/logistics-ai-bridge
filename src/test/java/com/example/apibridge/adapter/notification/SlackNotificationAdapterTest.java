@@ -1,4 +1,4 @@
-package com.example.apibridge.service;
+package com.example.apibridge.adapter.notification;
 
 import com.example.apibridge.dto.AIResponse;
 import com.example.apibridge.dto.ExtractionResponse;
@@ -18,9 +18,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-public class SlackSenderServiceTest {
+public class SlackNotificationAdapterTest {
 
-    private SlackSenderService slackSenderService;
+    private SlackNotificationAdapter adapter;
 
     @Mock
     private Slack slack;
@@ -30,41 +30,36 @@ public class SlackSenderServiceTest {
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        slackSenderService = new SlackSenderService(webhookUrl, slack);
+        adapter = new SlackNotificationAdapter(webhookUrl, slack);
     }
 
     @Test
-    public void testSendExtractionToSlackSuccess() throws IOException {
+    public void testSendExtractionSuccess() throws IOException {
         ExtractionResponse extraction = new ExtractionResponse();
         extraction.setCompanyName("Test Corp");
-        
         when(slack.send(eq(webhookUrl), any(Payload.class))).thenReturn(mock(WebhookResponse.class));
 
-        slackSenderService.sendExtractionToSlack(extraction);
+        adapter.sendExtraction(null, extraction);
 
         verify(slack, times(1)).send(eq(webhookUrl), any(Payload.class));
     }
 
     @Test
-    public void testSendAIExtractionToSlackSuccess() throws IOException {
+    public void testSendAIExtractionSuccess() throws IOException {
         AIResponse aiResponse = new AIResponse();
         aiResponse.setCompanyName("AI Corp");
-
         when(slack.send(eq(webhookUrl), any(Payload.class))).thenReturn(mock(WebhookResponse.class));
 
-        slackSenderService.sendAIExtractionToSlack(aiResponse);
+        adapter.sendAIExtraction(null, aiResponse);
 
         verify(slack, times(1)).send(eq(webhookUrl), any(Payload.class));
     }
 
     @Test
-    public void testSendSlackFailureThrowsNotificationException() throws IOException {
+    public void testSendFailureThrowsNotificationException() throws IOException {
         ExtractionResponse extraction = new ExtractionResponse();
-        
         when(slack.send(anyString(), any(Payload.class))).thenThrow(new IOException("Connection failed"));
 
-        assertThrows(NotificationException.class, () -> {
-            slackSenderService.sendExtractionToSlack(extraction);
-        });
+        assertThrows(NotificationException.class, () -> adapter.sendExtraction(null, extraction));
     }
 }
