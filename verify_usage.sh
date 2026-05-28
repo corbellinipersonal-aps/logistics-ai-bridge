@@ -82,16 +82,14 @@ assert_status "AI extract → persist" 200 "$STATUS" "$BODY"
 
 # Parse the returned ID for use in later steps
 EXTRACTION_ID=$(echo "$BODY" | jq -r '.id // empty' 2>/dev/null)
-if [ -z "$EXTRACTION_ID" ]; then
-    # Fall back to fetching the first available ID
-    ALL=$(curl -s "$BASE_URL/extractions")
-    EXTRACTION_ID=$(echo "$ALL" | jq -r '.[0].id // empty' 2>/dev/null)
-fi
 
 if [ -z "$EXTRACTION_ID" ]; then
     red "Could not determine a valid extraction ID — skipping ID-based steps"
 else
     info "  Using extraction ID: $EXTRACTION_ID"
+    # Verify the new GET /api/extractions/{id} endpoint works
+    STATUS=$(http_get "$BASE_URL/extractions/${EXTRACTION_ID}")
+    assert_status "GET /extractions/$EXTRACTION_ID" 200 "$STATUS" "$(body)"
 fi
 echo ""
 

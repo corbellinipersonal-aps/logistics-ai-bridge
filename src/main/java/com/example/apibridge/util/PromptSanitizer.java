@@ -12,11 +12,18 @@ import java.util.Locale;
  * <ol>
  *   <li><b>Heuristic keyword filter</b> — rejects input that contains phrases
  *       commonly used in injection attempts (e.g. "ignore all previous instructions").
- *       Applied first so obviously malicious payloads never reach the model.</li>
+ *       Applied first so obviously malicious payloads never reach the model.
+ *       <br><em>Limitation:</em> this is a best-effort heuristic, not a security boundary.
+ *       It catches literal phrases but not obfuscated variants (Unicode substitutions,
+ *       token splitting, etc.). It should be combined with the structural delimiter layer
+ *       and treated as one layer of a defence-in-depth strategy.</li>
  *   <li><b>Structural delimiter wrapping</b> — wraps the sanitized text in
  *       {@code <user_input>} XML tags. The system prompt instructs the model that
  *       nothing inside those tags can override extraction rules, making it harder
- *       for subtle injections to succeed even if they slip past the keyword filter.</li>
+ *       for subtle injections to succeed even if they slip past the keyword filter.
+ *       <br><em>Note:</em> {@link com.example.apibridge.service.AIService#buildPrompt}
+ *       references these tags explicitly in its security instruction — both must stay
+ *       in sync.</li>
  * </ol>
  */
 public final class PromptSanitizer {
