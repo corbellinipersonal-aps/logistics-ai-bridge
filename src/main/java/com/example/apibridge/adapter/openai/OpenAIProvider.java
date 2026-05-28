@@ -83,7 +83,11 @@ public class OpenAIProvider implements AIProvider {
             log.info("OpenAI API call successful.");
 
             com.fasterxml.jackson.databind.JsonNode rootNode = objectMapper.readTree(response);
-            String content = rootNode.path("choices").get(0).path("message").path("content").asText();
+            com.fasterxml.jackson.databind.JsonNode choices = rootNode.path("choices");
+            if (choices.isEmpty()) {
+                throw new AIExtractionException("OpenAI API returned no choices (possible content filter)");
+            }
+            String content = choices.get(0).path("message").path("content").asText();
             content = stripMarkdownFences(content);
 
             AIResponse result = objectMapper.readValue(content, AIResponse.class);

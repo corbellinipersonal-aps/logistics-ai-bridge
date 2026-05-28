@@ -82,9 +82,15 @@ public class GeminiAIProvider implements AIProvider {
             log.info("Gemini API call successful.");
 
             com.fasterxml.jackson.databind.JsonNode rootNode = objectMapper.readTree(response);
-            String content = rootNode.path("candidates").get(0)
-                    .path("content").path("parts").get(0)
-                    .path("text").asText();
+            com.fasterxml.jackson.databind.JsonNode candidates = rootNode.path("candidates");
+            if (candidates.isEmpty()) {
+                throw new AIExtractionException("Gemini API returned no candidates (possible content filter)");
+            }
+            com.fasterxml.jackson.databind.JsonNode parts = candidates.get(0).path("content").path("parts");
+            if (parts.isEmpty()) {
+                throw new AIExtractionException("Gemini API returned no parts in candidate response");
+            }
+            String content = parts.get(0).path("text").asText();
             content = stripMarkdownFences(content);
 
             AIResponse result = objectMapper.readValue(content, AIResponse.class);

@@ -68,7 +68,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleRuntimeException(RuntimeException e) {
         Map<String, String> error = new HashMap<>();
         error.put("error", "Internal Server Error");
-        error.put("message", e.getMessage());
+        error.put("message", "An unexpected error occurred. Please contact support.");
         return ResponseEntity.status(500).body(error);
     }
 

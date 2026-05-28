@@ -65,8 +65,6 @@ public class SendController {
     public ResponseEntity<String> sendAIExtractionToEmail(@Valid @RequestBody ExtractionRequest request,
                                                           @RequestParam String to) {
         AIResponse aiResponse = aiService.extractData(request);
-        if (aiResponse == null)
-            return ResponseEntity.badRequest().body("Failed to extract data from text.");
         extractionService.saveAIExtraction(aiResponse);
         emailNotifier.sendAIExtraction(to, aiResponse);
         return ResponseEntity.ok("Sent AI extraction to email");
@@ -80,8 +78,6 @@ public class SendController {
     @ApiResponse(responseCode = "500", description = "Internal server error")
     public ResponseEntity<String> sendAIExtractionToSlack(@Valid @RequestBody ExtractionRequest request) {
         AIResponse aiResponse = aiService.extractData(request);
-        if (aiResponse == null)
-            return ResponseEntity.badRequest().body("Failed to extract data from text.");
         extractionService.saveAIExtraction(aiResponse);
         slackNotifier.sendAIExtraction(null, aiResponse);
         return ResponseEntity.ok("Sent AI extraction to Slack");
@@ -94,8 +90,6 @@ public class SendController {
     @ApiResponse(responseCode = "400", description = "Failed to extract data")
     public ResponseEntity<AIResponse> extractData(@Valid @RequestBody ExtractionRequest request) {
         AIResponse aiResponse = aiService.extractData(request);
-        if (aiResponse == null)
-            return ResponseEntity.badRequest().build();
         extractionService.saveAIExtraction(aiResponse);
         return ResponseEntity.ok(aiResponse);
     }
