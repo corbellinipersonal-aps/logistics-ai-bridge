@@ -37,21 +37,19 @@ Logistics and back-office teams receive critical data in free-form text. Manual 
 - Prompts enforce **JSON-only** responses; adapters strip markdown fences and validate parsing.
 - Failures surface as structured errors (`GlobalExceptionHandler`, `AIExtractionException`), not silent `null` returns.
 
-### 2. Pragmatic architecture, path to hexagonal
+### 2. Full hexagonal architecture
 
-**Current state (hybrid layered + partial ports):**
-
-- `AIProvider` port + `GroqAIProvider` adapter — **done** (core extraction decoupled from Groq).
-- `AIService` owns prompt construction — **appropriate** application logic.
-- Email (`EmailSenderService`), Slack (`SlackSenderService`), and JPA persistence remain **directly coupled** to Spring/mail/Slack SDK — **intentional deferral** (see AUTOM-HUB note: full hexagonal refactor is non-trivial).
-
-**Target state:**
+**Current state:**
 
 ```
-Domain (extraction rules, validation) — no Spring/Groq/H2/Slack imports
-    ↑ ports: AIProvider, NotificationPort, ExtractionRepositoryPort
-    ↓ adapters: Groq, OpenAI, Gemini, SMTP, Slack, H2/JPA
+Domain (extraction rules, prompt sanitization, validation) — no Spring/Groq/H2/Slack imports
+    ↑ ports: AIProvider, ExtractionStore, NotificationPort
+    ↓ adapters: GroqAIProvider, OpenAIProvider, GeminiAIProvider
+               JpaExtractionStore
+               EmailNotificationAdapter, SlackNotificationAdapter
 ```
+
+All three port boundaries are implemented. Swapping any external dependency is an adapter + config change, not a service rewrite.
 
 ### 3. Showcase-first delivery
 
@@ -67,6 +65,8 @@ Supporting assets: `demo-assets/`, `docs/demo-guide.md`, `/index.html` dashboard
 
 - Secrets via environment variables (`.env` / `application.yml`), never committed.
 - `.gitignore` excludes `target/`, `h2_data/`, `.env`, `node_modules/`.
+- **Prompt injection mitigation** — `PromptSanitizer` applies a keyword filter and structural `<user_input>` delimiters before user text reaches the LLM.
+- **Resilience4j** — retry (3 attempts, 1 s back-off) and circuit breaker (50 % failure threshold, 30 s open state) on all LLM calls.
 - Docker + Maven CI for repeatable builds.
 - GitHub topics for discoverability (`java`, `spring-boot`, `llm`, `document-processing`, etc.).
 
@@ -77,7 +77,8 @@ Supporting assets: `demo-assets/`, `docs/demo-guide.md`, `/index.html` dashboard
 | Runtime | Java 17 | Aligns with portfolio positioning and enterprise expectations |
 | Framework | Spring Boot 3 | Mature ecosystem, JPA, mail, validation, OpenAPI |
 | AI (active) | Groq / Llama 3.1 | Fast, cost-effective for demos; `WebClient` for non-blocking calls |
-| AI (planned) | OpenAI, Gemini | Same `AIProvider` port; swap adapters via configuration |
+| AI (active) | OpenAI, Gemini | Same `AIProvider` port; switch via `ai.provider` in `application.yml` |
+| Resilience | Resilience4j | Retry + circuit breaker on all LLM calls; config-driven thresholds |
 | Persistence | H2 (file) | Zero-setup evaluation; swap to PostgreSQL for production narrative |
 | Notifications | SMTP + Slack webhook | Realistic ops workflows without heavy infra |
 | API docs | springdoc / Swagger | Low-friction reviewer testing |
@@ -111,4 +112,27 @@ Supporting assets: `demo-assets/`, `docs/demo-guide.md`, `/index.html` dashboard
 - [x] Repo public, documented, containerized
 - [ ] Full hexagonal refactor (notification + persistence ports)
 - [ ] Multi-provider configuration switch
+- [ ] Marketing rollout (thumbnail, social posts)
+
+## Risk Register & Mitigations
+
+| Risk | Impact | Mitigation |
+|---|---|---|
+| LLM returns invalid JSON | Extraction fails | Strict prompts; adapter parsing; tests on `GroqAIProvider` |
+| Prompt injection attack | Data manipulation | `PromptSanitizer` keyword filter + structural delimiters; `400` on detection |
+| Provider rate-limit / outage | Extraction unavailable | Resilience4j retry + circuit breaker on all LLM calls |
+| API key leakage | Security incident | `.env` gitignored; rotate keys; remove token from git remote URL |
+| H2 in production narrative | Scalability questions | Document as demo DB; note PostgreSQL migration path |
+
+## Success Criteria
+
+- [x] `mvn test` passes in CI
+- [x] `/api/send/ai/extract` returns valid JSON for demo scenarios
+- [x] Extractions persist and list via `/api/extractions`
+- [x] Email and Slack paths work when credentials configured
+- [x] Repo public, documented, containerized
+- [x] Full hexagonal refactor (notification + persistence ports)
+- [x] Multi-provider configuration switch (Groq, OpenAI, Gemini)
+- [x] Prompt injection mitigation (`PromptSanitizer`)
+- [x] Production resilience (Resilience4j retry + circuit breaker)
 - [ ] Marketing rollout (thumbnail, social posts)

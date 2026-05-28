@@ -6,13 +6,15 @@ For strategic context and architectural direction, see [`ANALYSIS.md`](ANALYSIS.
 
 ## Development Philosophy
 
-AI Logistics Automation Hub is a professional-grade Spring Boot backend built around a layered architecture with a growing **ports-and-adapters** boundary for AI providers. Contributions should preserve:
+AI Logistics Automation Hub is a professional-grade Spring Boot backend built around a **full hexagonal (ports-and-adapters) architecture**. Contributions should preserve:
 
-- **Separation of concerns** — controllers delegate; services contain business logic; repositories handle persistence; external APIs live in adapters.
-- **Provider decoupling** — LLM calls go through the `AIProvider` port (`GroqAIProvider` today); do not add Groq-specific HTTP logic inside `AIService`.
+- **Separation of concerns** — controllers delegate; services contain business logic; adapters handle all external I/O.
+- **Port boundaries** — LLM calls go through `AIProvider`, persistence through `ExtractionStore`, notifications through `NotificationPort`. Do not add provider-specific or framework-specific code inside services.
+- **Provider decoupling** — select Groq, OpenAI, or Gemini via `ai.provider` in `application.yml`; no code changes required.
 - **Stateless service layer** — services should not hold mutable state between requests.
 - **Explicit dependencies** — all dependencies are injected via constructors, never through fields.
 - **Clean API contracts** — DTOs define the shape of all data entering or leaving the application.
+- **Security by default** — user input must pass through `PromptSanitizer` before reaching the LLM; new endpoints should validate input with `@Valid`.
 
 ## Getting Started
 
@@ -20,7 +22,7 @@ AI Logistics Automation Hub is a professional-grade Spring Boot backend built ar
 
 - **Java 17** or higher
 - **Maven 3.8+**
-- A valid **Groq API key** (OpenAI/Gemini adapters are planned; see `docs/roadmap.md`)
+- A valid **Groq API key** (or OpenAI/Gemini key if switching providers — see `application.yml`)
 - A **Slack Incoming Webhook URL** and **Gmail App Password** (optional, for notification testing)
 
 ### Local Setup
@@ -120,18 +122,24 @@ Use [GitHub Issues](https://github.com/corbellinipersonal-aps/logistics-ai-bridg
 
 ```
 src/main/java/com/example/apibridge/
-├── adapter/         # External integrations (e.g. GroqAIProvider)
-├── config/          # Spring beans (OpenAPI, WebClient, RestTemplate)
-├── controller/      # REST endpoints; delegates to services
-├── demo/            # Demo profile utilities (populate, reset)
-├── dto/             # Data transfer objects for API contracts
-├── exception/       # Custom exceptions and GlobalExceptionHandler
-├── mapper/          # JPA entity ↔ DTO mappers
-├── model/           # JPA entities (persistence layer)
-├── port/            # Interfaces decoupling core logic from adapters
-├── repository/      # Spring Data JPA repositories
-├── service/         # Business logic and orchestration (AIService, notifications)
-└── util/            # Shared utilities (e.g., MessageFormatter)
+├── adapter/
+│   ├── gemini/          # GeminiAIProvider
+│   ├── groq/            # GroqAIProvider
+│   ├── notification/    # EmailNotificationAdapter, SlackNotificationAdapter
+│   ├── openai/          # OpenAIProvider
+│   ├── persistence/     # JpaExtractionStore
+│   └── resilience/      # AIProviderResilienceDecorator (Resilience4j)
+├── config/              # Spring beans (OpenAPI, WebClient, Slack, ObjectMapper)
+├── controller/          # REST endpoints; delegates to services
+├── demo/                # Demo profile utilities (populate, reset)
+├── dto/                 # Data transfer objects for API contracts
+├── exception/           # Custom exceptions and GlobalExceptionHandler
+├── mapper/              # JPA entity ↔ DTO mappers
+├── model/               # JPA entities (persistence layer)
+├── port/                # AIProvider, ExtractionStore, NotificationPort
+├── repository/          # Spring Data JPA repositories
+├── service/             # Business logic and orchestration (AIService, ExtractionService)
+└── util/                # Shared utilities (MessageFormatter, PromptSanitizer)
 
 demo-assets/         # Sample input texts used for live demos
 docs/                # Integration guide, demo guide, roadmap, troubleshooting
