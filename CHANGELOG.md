@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.0] - 2026-05-28
+
+### Fixed (High Priority)
+- **`RuntimeException` handler** no longer leaks raw `e.getMessage()` to clients — now returns the same sanitized message as the generic `Exception` handler.
+- **Null/bounds check on LLM response** — all three adapters (Groq, OpenAI, Gemini) now check that `choices`/`candidates`/`parts` are non-empty before indexing, throwing a clean `AIExtractionException` instead of a NPE-driven 500.
+- **Dead null-checks removed** from `SendController` — `aiService.extractData` never returns null; `GlobalExceptionHandler` now handles failures correctly without false-confidence guards.
+
+### Fixed (Medium Priority)
+- **`GET /api/extractions/{id}`** added to `ExtractionController`, completing API symmetry with the existing list and save endpoints.
+- **Prompt delimiter coupling test** — two new tests in `AIServiceTest` assert that `<user_input>` / `</user_input>` tags are present in the prompt sent to the provider, and that injection attempts are rejected before the provider is called.
+- **`PromptSanitizer` Javadoc** updated to explicitly state the keyword filter is best-effort, list its limitations (obfuscation, Unicode substitution, token splitting), and note the coupling with `buildPrompt`.
+- **Spring Boot bumped** from `3.2.0` to `3.3.6` to address known CVEs and align with the production-readiness claim in `SECURITY.md`.
+- **Smoke test** updated to use `GET /api/extractions/{id}` directly, removing the fallback `GET /extractions` + `.[0].id` workaround.
+
 ## [1.9.0] - 2026-05-28
 
 ### Changed
