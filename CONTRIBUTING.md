@@ -27,7 +27,7 @@ AI Logistics Automation Hub is a professional-grade Spring Boot backend built ar
 
 ```bash
 # Clone the repository
-git clone https://github.com/HectorCorbellini/logistics-ai-bridge.git
+git clone https://github.com/corbellinipersonal-aps/logistics-ai-bridge.git
 cd logistics-ai-bridge
 
 # Copy and populate environment variables
@@ -111,7 +111,7 @@ mvn test -Dtest='!**IntegrationTest'
 
 ## Reporting Issues
 
-Use [GitHub Issues](https://github.com/HectorCorbellini/logistics-ai-bridge/issues) to report:
+Use [GitHub Issues](https://github.com/corbellinipersonal-aps/logistics-ai-bridge/issues) to report:
 
 - **Bugs** — include the full stack trace, the environment (`mvn -version`, OS), and steps to reproduce.
 - **Enhancements** — describe the desired behavior and the business context that motivates it.

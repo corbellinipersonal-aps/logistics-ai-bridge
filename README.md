@@ -1,6 +1,6 @@
 # AI Logistics Automation Hub
 
-![Java CI with Maven](https://github.com/HectorCorbellini/logistics-ai-bridge/actions/workflows/maven.yml/badge.svg)
+![Java CI with Maven](https://github.com/corbellinipersonal-aps/logistics-ai-bridge/actions/workflows/maven.yml/badge.svg)
 
 > **Intelligent Document-to-JSON Extractor** | Java 17 · Spring Boot 3 · WebClient · Groq AI
 
